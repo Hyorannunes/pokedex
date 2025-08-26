@@ -17,14 +17,14 @@
   outline: none;
   transition: all 0.3s ease;
   background: white;
-  color: #1a202c; /* Cor do texto digitado - preto/cinza escuro */
+  color: #1a202c; 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .search-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  color: #1a202c; /* Garante que o texto seja visível quando focado */
+  color: #1a202c;
 }
 
 .search-input::placeholder {

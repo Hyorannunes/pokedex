@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import pokemonIcon from '../public/pokemon-icon.png';
 import './App.css'
 import SearchBar from './components/SearchBar'
 import PokemonGrid from './components/PokemonGrid'
@@ -49,7 +50,7 @@ function App() {
   const handleSearch = (query) => {
     setSearchQuery(query)
     setCurrentPage(1)
-    // Limpa o tipo selecionado quando faz uma busca
+
     if (query) {
       setSelectedType('');
       loadPokemon(1, query, '');
@@ -61,7 +62,7 @@ function App() {
   const handleTypeSelect = (type) => {
     setSelectedType(type);
     setCurrentPage(1);
-    // Limpa a busca quando seleciona um tipo
+ 
     if (type) {
       setSearchQuery('');
       loadPokemon(1, '', type);
@@ -73,8 +74,6 @@ function App() {
   const handlePageChange = (page) => {
     setCurrentPage(page)
     loadPokemon(page, searchQuery, selectedType)
-    
-    // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -82,7 +81,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-title-container">
-          <img src="/pokemon-icon.png" alt="Pokédex" className="pokedex-icon" />
+          <img src={pokemonIcon} alt="Pokédex" className="pokedex-icon" />
           <h1 className="app-title">
             Pokédex
           </h1>

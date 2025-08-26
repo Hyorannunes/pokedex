@@ -2,7 +2,6 @@ import PokemonService from './pokemonService.js';
 
 const POKEMON_PER_PAGE = 20;
 
-// Helper function to format Pokemon data from service response
 const formatPokemonData = (pokemonData) => {
   return {
     id: pokemonData.id,
@@ -14,12 +13,10 @@ const formatPokemonData = (pokemonData) => {
   };
 };
 
-// Fetch Pokemon list with pagination using service
 export const getPokemonByPage = async (page = 1) => {
   try {
     const data = await PokemonService.listPokemons(page, POKEMON_PER_PAGE);
-    
-    // Fetch detailed data for each Pokemon
+
     const pokemonPromises = data.results.map(async (pokemon) => {
       const pokemonData = await PokemonService.getPokemon(pokemon.name);
       return pokemonData;
@@ -27,8 +24,7 @@ export const getPokemonByPage = async (page = 1) => {
     
     const pokemonDetails = await Promise.all(pokemonPromises);
     const formattedPokemon = pokemonDetails.map(formatPokemonData);
-    
-    // Calculate total pages (assuming 1302 total pokemon)
+
     const totalPokemon = data.count || 1302;
     const totalPages = Math.ceil(totalPokemon / POKEMON_PER_PAGE);
     
@@ -44,7 +40,6 @@ export const getPokemonByPage = async (page = 1) => {
   }
 };
 
-// Search Pokemon by name or ID using service
 export const searchPokemon = async (query, page = 1) => {
   if (!query || query.trim() === '') {
     return getPokemonByPage(page);
@@ -53,7 +48,6 @@ export const searchPokemon = async (query, page = 1) => {
   const searchQuery = query.trim().toLowerCase();
   
   try {
-    // Try to get the pokemon directly
     const pokemonData = await PokemonService.getPokemon(searchQuery);
     const formattedPokemon = formatPokemonData(pokemonData);
     
@@ -64,7 +58,7 @@ export const searchPokemon = async (query, page = 1) => {
       totalCount: 1
     };
   } catch (error) {
-    // Pokemon not found, return empty results
+
     return {
       pokemon: [],
       totalPages: 0,
@@ -74,7 +68,6 @@ export const searchPokemon = async (query, page = 1) => {
   }
 };
 
-// Get Pokemon by type using service
 export const getPokemonByType = async (type, page = 1) => {
   if (!type || type.trim() === '') {
     return getPokemonByPage(page);
@@ -98,7 +91,6 @@ export const getPokemonByType = async (type, page = 1) => {
   }
 };
 
-// Get all Pokemon types using service
 export const getPokemonTypes = async () => {
   try {
     const types = await PokemonService.getPokemonTypes();

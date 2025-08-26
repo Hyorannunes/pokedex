@@ -1,4 +1,3 @@
-// Service para consumir a PokeAPI
 class PokemonService {
     static async listPokemons(page = 1, limit = 20) {
         const offset = (page - 1) * limit;
