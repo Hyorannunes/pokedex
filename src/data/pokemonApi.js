@@ -1,10 +1,8 @@
-const API_BASE_URL = 'https://pokeapi.co/api/v2';
+import PokemonService from './pokemonService.js';
+
 const POKEMON_PER_PAGE = 20;
 
-// Total number of Pokemon (Generation 1-9)
-const TOTAL_POKEMON = 1302;
-
-// Helper function to format Pokemon data from API response
+// Helper function to format Pokemon data from service response
 const formatPokemonData = (pokemonData) => {
   return {
     id: pokemonData.id,
@@ -16,40 +14,29 @@ const formatPokemonData = (pokemonData) => {
   };
 };
 
-// Fetch Pokemon list with pagination
+// Fetch Pokemon list with pagination using service
 export const getPokemonByPage = async (page = 1) => {
-  const offset = (page - 1) * POKEMON_PER_PAGE;
-  const totalPages = Math.ceil(TOTAL_POKEMON / POKEMON_PER_PAGE);
-  
   try {
-    // Get the list of Pokemon
-    const listResponse = await fetch(
-      `${API_BASE_URL}/pokemon?limit=${POKEMON_PER_PAGE}&offset=${offset}`
-    );
-    
-    if (!listResponse.ok) {
-      throw new Error('Failed to fetch Pokemon list');
-    }
-    
-    const listData = await listResponse.json();
+    const data = await PokemonService.listPokemons(page, POKEMON_PER_PAGE);
     
     // Fetch detailed data for each Pokemon
-    const pokemonPromises = listData.results.map(async (pokemon) => {
-      const response = await fetch(pokemon.url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${pokemon.name}`);
-      }
-      return response.json();
+    const pokemonPromises = data.results.map(async (pokemon) => {
+      const pokemonData = await PokemonService.getPokemon(pokemon.name);
+      return pokemonData;
     });
     
     const pokemonDetails = await Promise.all(pokemonPromises);
     const formattedPokemon = pokemonDetails.map(formatPokemonData);
     
+    // Calculate total pages (assuming 1302 total pokemon)
+    const totalPokemon = data.count || 1302;
+    const totalPages = Math.ceil(totalPokemon / POKEMON_PER_PAGE);
+    
     return {
       pokemon: formattedPokemon,
       totalPages,
       currentPage: page,
-      totalCount: TOTAL_POKEMON
+      totalCount: totalPokemon
     };
   } catch (error) {
     console.error('Error fetching Pokemon:', error);
@@ -57,7 +44,7 @@ export const getPokemonByPage = async (page = 1) => {
   }
 };
 
-// Search Pokemon by name or ID
+// Search Pokemon by name or ID using service
 export const searchPokemon = async (query, page = 1) => {
   if (!query || query.trim() === '') {
     return getPokemonByPage(page);
@@ -66,106 +53,44 @@ export const searchPokemon = async (query, page = 1) => {
   const searchQuery = query.trim().toLowerCase();
   
   try {
-    // If query is a number, search by ID
-    if (/^\d+$/.test(searchQuery)) {
-      const pokemonId = parseInt(searchQuery);
-      if (pokemonId > 0 && pokemonId <= TOTAL_POKEMON) {
-        const response = await fetch(`${API_BASE_URL}/pokemon/${pokemonId}`);
-        if (!response.ok) {
-          throw new Error('Pokemon not found');
-        }
-        const pokemonData = await response.json();
-        return {
-          pokemon: [formatPokemonData(pokemonData)],
-          totalPages: 1,
-          currentPage: 1,
-          totalCount: 1
-        };
-      } else {
-        return {
-          pokemon: [],
-          totalPages: 0,
-          currentPage: 1,
-          totalCount: 0
-        };
-      }
-    }
+    // Try to get the pokemon directly
+    const pokemonData = await PokemonService.getPokemon(searchQuery);
+    const formattedPokemon = formatPokemonData(pokemonData);
     
-    // Search by name
-    try {
-      const response = await fetch(`${API_BASE_URL}/pokemon/${searchQuery}`);
-      if (response.ok) {
-        const pokemonData = await response.json();
-        return {
-          pokemon: [formatPokemonData(pokemonData)],
-          totalPages: 1,
-          currentPage: 1,
-          totalCount: 1
-        };
-      }
-    } catch (error) {
-      // Pokemon not found by exact name, return empty results
-      return {
-        pokemon: [],
-        totalPages: 0,
-        currentPage: 1,
-        totalCount: 0
-      };
-    }
-    
-    // If exact match not found, return empty results
+    return {
+      pokemon: [formattedPokemon],
+      totalPages: 1,
+      currentPage: 1,
+      totalCount: 1
+    };
+  } catch (error) {
+    // Pokemon not found, return empty results
     return {
       pokemon: [],
       totalPages: 0,
       currentPage: 1,
       totalCount: 0
     };
-    
-  } catch (error) {
-    console.error('Error searching Pokemon:', error);
-    throw error;
   }
 };
 
-// Get Pokemon by type
+// Get Pokemon by type using service
 export const getPokemonByType = async (type, page = 1) => {
   if (!type || type.trim() === '') {
     return getPokemonByPage(page);
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/type/${type.toLowerCase()}`);
-    if (!response.ok) {
-      throw new Error('Type not found');
-    }
+    const data = await PokemonService.getPokemonsByElement(type.toLowerCase(), page, POKEMON_PER_PAGE);
+    const formattedPokemon = data.pokemons.map(formatPokemonData);
     
-    const typeData = await response.json();
-    const pokemonList = typeData.pokemon.map(p => p.pokemon);
-    
-    // Calculate pagination
-    const totalCount = pokemonList.length;
-    const totalPages = Math.ceil(totalCount / POKEMON_PER_PAGE);
-    const startIndex = (page - 1) * POKEMON_PER_PAGE;
-    const endIndex = startIndex + POKEMON_PER_PAGE;
-    const paginatedList = pokemonList.slice(startIndex, endIndex);
-    
-    // Fetch detailed data for each Pokemon
-    const pokemonPromises = paginatedList.map(async (pokemon) => {
-      const response = await fetch(pokemon.url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${pokemon.name}`);
-      }
-      return response.json();
-    });
-    
-    const pokemonDetails = await Promise.all(pokemonPromises);
-    const formattedPokemon = pokemonDetails.map(formatPokemonData);
+    const totalPages = Math.ceil(data.total / POKEMON_PER_PAGE);
     
     return {
       pokemon: formattedPokemon,
       totalPages,
       currentPage: page,
-      totalCount
+      totalCount: data.total
     };
   } catch (error) {
     console.error('Error fetching Pokemon by type:', error);
@@ -173,19 +98,10 @@ export const getPokemonByType = async (type, page = 1) => {
   }
 };
 
-// Get all Pokemon types
+// Get all Pokemon types using service
 export const getPokemonTypes = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/type`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch types');
-    }
-    
-    const typeData = await response.json();
-    const types = typeData.results
-      .map(type => type.name)
-      .filter(type => !['unknown', 'shadow'].includes(type)) // Filter out unknown/shadow types
-      .sort();
+    const types = await PokemonService.getPokemonTypes();
     
     return {
       types,
