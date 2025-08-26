@@ -49,13 +49,25 @@ function App() {
   const handleSearch = (query) => {
     setSearchQuery(query)
     setCurrentPage(1)
-    loadPokemon(1, query, selectedType)
+    // Limpa o tipo selecionado quando faz uma busca
+    if (query) {
+      setSelectedType('');
+      loadPokemon(1, query, '');
+    } else {
+      loadPokemon(1, query, selectedType);
+    }
   }
 
   const handleTypeSelect = (type) => {
     setSelectedType(type);
     setCurrentPage(1);
-    loadPokemon(1, searchQuery, type);
+    // Limpa a busca quando seleciona um tipo
+    if (type) {
+      setSearchQuery('');
+      loadPokemon(1, '', type);
+    } else {
+      loadPokemon(1, searchQuery, type);
+    }
   };
 
   const handlePageChange = (page) => {
@@ -86,7 +98,7 @@ function App() {
       </div>
 
       <main className="app-main">
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={handleSearch} value={searchQuery} />
         <TypeFilterBar onTypeSelect={handleTypeSelect} selectedType={selectedType} />
         
         <div className="results-info">

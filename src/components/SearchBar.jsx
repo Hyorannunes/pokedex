@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './SearchBar.css';
 
-const SearchBar = ({ onSearch, placeholder = "Buscar Pokémon por nome ou ID..." }) => {
-  const [searchValue, setSearchValue] = useState('');
+const SearchBar = ({ onSearch, value = '', placeholder = "Buscar Pokémon por nome ou ID..." }) => {
+  const [searchValue, setSearchValue] = useState(value);
+
+  // Sincroniza o valor interno com o valor externo
+  useEffect(() => {
+    setSearchValue(value);
+  }, [value]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
