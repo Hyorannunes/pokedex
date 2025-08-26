@@ -1,0 +1,29 @@
+.type-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.type-btn {
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.type-btn.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.type-filter-bar.error {
+  color: #e53e3e;
+  font-weight: 500;
+}
