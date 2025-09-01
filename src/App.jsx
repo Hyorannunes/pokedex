@@ -82,7 +82,6 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-title-container">
-          <img src="/pokemon-icon.png" alt="Pokédex" className="pokedex-icon" />
           <h1 className="app-title">
             Pokédex
           </h1>
