@@ -1,0 +1,1 @@
+Pokédex Web is a simple web application that displays Pokémon data using the PokéAPI.
