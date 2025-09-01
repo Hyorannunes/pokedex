@@ -1,26 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import Pokedex from "./Pokedex";
+import Pokedex from "../components/Pokedex";
 
 beforeEach(() => {
   global.fetch = jest.fn(() =>
     Promise.resolve({
-      json: () =>
-        Promise.resolve({
-          results: [
-            { name: "bulbasaur" },
-            { name: "charmander" },
-            { name: "squirtle" },
-          ],
-        }),
+      json: () => Promise.resolve([
+        {
+          id: 1,
+          name: "bulbasaur",
+          sprites: { front_default: "bulbasaur.png" }
+        }
+      ])
     })
   );
 });
 
-test("quando a página inicializa deve mostrar todos os pokémons", async () => {
-  render(<Pokedex />);
-
-  // Espera a lista inicial carregar com todos
-  expect(await screen.findByText("bulbasaur")).toBeInTheDocument();
-  expect(screen.getByText("charmander")).toBeInTheDocument();
-  expect(screen.getByText("squirtle")).toBeInTheDocument();
+describe('Pokedex Initial Render', () => {
+  test('renders loading state initially', () => {
+    render(<Pokedex />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
 });

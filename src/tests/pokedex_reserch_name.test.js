@@ -1,40 +1,44 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Pokedex from "./Pokedex";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import Pokedex from "../components/Pokedex";
+import '@testing-library/jest-dom';
 
-// Mock da API
-beforeEach(() => {
-  global.fetch = jest.fn(() =>
-    Promise.resolve({
-      json: () =>
-        Promise.resolve({
-          results: [
-            { name: "bulbasaur" },
-            { name: "charmander" },
-            { name: "squirtle" },
-          ],
-        }),
-    })
-  );
-});
+const mockPokemonData = [
+  { name: "bulbasaur", type: "grass", sprites: { front_default: "bulbasaur.png" } },
+  { name: "charmander", type: "fire", sprites: { front_default: "charmander.png" } },
+  { name: "squirtle", type: "water", sprites: { front_default: "squirtle.png" } },
+];
 
-test("renderiza lista inicial de pokemons", async () => {
-  render(<Pokedex />);
-
-  // Espera os itens aparecerem
-  expect(await screen.findByText("bulbasaur")).toBeInTheDocument();
-  expect(screen.getByText("charmander")).toBeInTheDocument();
-  expect(screen.getByText("squirtle")).toBeInTheDocument();
-});
-
-test("filtra pokemon pelo campo de busca", async () => {
-  render(<Pokedex />);
-
-  await screen.findByText("bulbasaur"); // espera carregar
-
-  fireEvent.change(screen.getByPlaceholderText("Buscar Pokémon"), {
-    target: { value: "char" },
+describe('Pokedex Search', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockPokemonData)
+      })
+    );
   });
 
-  expect(screen.getByText("charmander")).toBeInTheDocument();
-  expect(screen.queryByText("bulbasaur")).not.toBeInTheDocument();
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test("deve exibir apenas pokémons do tipo Fire ao selecionar o filtro", async () => {
+    await act(async () => {
+      render(<Pokedex />);
+    });
+
+    // Wait for initial render
+    await screen.findByText(/bulbasaur/i);
+
+    // Change filter to fire type
+    await act(async () => {
+      fireEvent.change(screen.getByRole("combobox"), { 
+        target: { value: "fire" } 
+      });
+    });
+
+    // Check filtered results
+    expect(screen.getByText(/charmander/i)).toBeInTheDocument();
+    expect(screen.queryByText(/bulbasaur/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/squirtle/i)).not.toBeInTheDocument();
+  });
 });
